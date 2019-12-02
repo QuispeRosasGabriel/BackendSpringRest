@@ -58,24 +58,58 @@ public class PlatoRestController {
 
 	@PostMapping("/platos")
 	@ResponseStatus(HttpStatus.CREATED)
-	public Plato create(@RequestBody Plato plato) {
-		return platoService.save(plato);
+	public ResponseEntity<?> create(@RequestBody Plato plato) {
+		Plato nuevoPlato = null;
+		Map<String, Object> response = new HashMap<>();
+		try {
+			nuevoPlato = platoService.save(plato);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al ingresar información en la base de datos");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "El cliente ha sido creado con éxito");
+		response.put("plato", nuevoPlato);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/platos/{id}")
-	@ResponseStatus(HttpStatus.CREATED)
-	public Plato update(@RequestBody Plato plato, @PathVariable Long id) {
+	public ResponseEntity<?> update(@RequestBody Plato plato, @PathVariable Long id) {
 		Plato platoActual = platoService.findById(id);
-		platoActual.setNombre(plato.getNombre());
-		platoActual.setCantidad(plato.getCantidad());
-		platoActual.setPrecio(plato.getPrecio());
+		Plato updatedPlato = null;
+		Map<String, Object> response = new HashMap<>();
+		if (platoActual == null) {
+			response.put("mensaje",
+					"Error: no se pudo editar ".concat(id.toString().concat(" no existe en la base de datos!")));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+		try {
+			platoActual.setNombre(plato.getNombre());
+			platoActual.setCantidad(plato.getCantidad());
+			platoActual.setPrecio(plato.getPrecio());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar información en la base de datos");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-		return platoService.save(platoActual);
+		response.put("mensaje", "El cliente ha sido actualizado con éxito");
+		response.put("plato", updatedPlato);
+		updatedPlato = platoService.save(platoActual);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/platos/{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void delete(@PathVariable Long id) {
-		platoService.delete(id);
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+		platoService.delete(id);}
+		catch (DataAccessException e) {
+			response.put("mensaje", "Error al eliminar información en la base de datos");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("Mensaje", "El cliente ha sido eliminado!");
+		return new ResponseEntity<Map<String,Object>>(response, HttpStatus.OK);
 	}
 }

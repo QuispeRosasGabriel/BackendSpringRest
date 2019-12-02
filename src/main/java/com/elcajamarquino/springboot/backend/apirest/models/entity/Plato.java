@@ -2,6 +2,7 @@ package com.elcajamarquino.springboot.backend.apirest.models.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 //import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,10 +18,12 @@ public class Plato implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	
+	@Column(nullable=false, unique = true)
 	private String nombre;
 	
 	private long cantidad;
+	
+	
 	private long precio;
 
 	public long getPrecio() {
